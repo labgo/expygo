@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-"""drillpaswd: finger drills for practicing passphrases"""
+"""passdrill: typing drills for practicing passphrases
+"""
 
 import sys
 import hashlib
@@ -8,7 +9,8 @@ import base64
 import getpass
 
 HASH_ALGORITHM = 'sha512'
-PASSPHRASE_HASH_FILENAME = 'drillpasswd.' + HASH_ALGORITHM
+PASSPHRASE_HASH_FILENAME = 'passdrill.' + HASH_ALGORITHM
+HELP = 'Use -s to save passphrase hash for practice.'
 
 
 def prompt():
@@ -31,17 +33,22 @@ def hasher(text):
 
 def save_hash(argv):
     if len(argv) > 1 or argv[0] != '-s':
-        print('ERROR: invalid argument. Use -s to save passphrase hash for practice.')
+        print('ERROR: invalid argument.', HELP)
         sys.exit(1)
     passwd_hash = hasher(prompt())
     with open(PASSPHRASE_HASH_FILENAME, 'wb') as fp:
         fp.write(passwd_hash)
-    print(f'Passphrase {HASH_ALGORITHM} hash saved to {PASSPHRASE_HASH_FILENAME}.')
+    print(f'Passphrase {HASH_ALGORITHM} hash saved to',
+          PASSPHRASE_HASH_FILENAME)
 
 
 def practice():
-    with open(PASSPHRASE_HASH_FILENAME, 'rb') as fp:
-        passwd_hash = fp.read()
+    try:
+        with open(PASSPHRASE_HASH_FILENAME, 'rb') as fp:
+            passwd_hash = fp.read()
+    except FileNotFoundError:
+        print('ERROR: passphrase hash file not found.', HELP)
+        sys.exit(2)
     print('Type q to end practice.')
     response = ''
     turn = 0
