@@ -9,7 +9,7 @@ import base64
 import getpass
 
 HASH_ALGORITHM = 'sha512'
-PASSPHRASE_HASH_FILENAME = 'passdrill.' + HASH_ALGORITHM
+HASH_FILENAME = 'passdrill.' + HASH_ALGORITHM
 HELP = 'Use -s to save passphrase hash for practice.'
 
 
@@ -26,25 +26,25 @@ def prompt():
     return passwd
 
 
-def hasher(text):
-    h = hashlib.new(HASH_ALGORITHM, text.encode('utf-8'))
-    return base64.encodebytes(h.digest())
+def hash_str(text):
+    octets = hashlib.sha512(text.encode('utf-8')).digest()
+    return base64.b64encode(octets)
 
 
 def save_hash(argv):
     if len(argv) > 2 or argv[1] != '-s':
         print('ERROR: invalid argument.', HELP)
         sys.exit(1)
-    passwd_hash = hasher(prompt())
-    with open(PASSPHRASE_HASH_FILENAME, 'wb') as fp:
+    passwd_hash = hash_str(prompt())
+    with open(HASH_FILENAME, 'wb') as fp:
         fp.write(passwd_hash)
     print(f'Passphrase {HASH_ALGORITHM} hash saved to',
-          PASSPHRASE_HASH_FILENAME)
+          HASH_FILENAME)
 
 
 def practice():
     try:
-        with open(PASSPHRASE_HASH_FILENAME, 'rb') as fp:
+        with open(HASH_FILENAME, 'rb') as fp:
             passwd_hash = fp.read()
     except FileNotFoundError:
         print('ERROR: passphrase hash file not found.', HELP)
@@ -58,12 +58,12 @@ def practice():
         response = getpass.getpass(f'{turn}:')
         if response == '':
             print('Type q to quit.')
-            turn -= 1  # don't count this turn
+            turn -= 1  # don't count this response
             continue
         elif response == 'q':
-            turn -= 1  # don't count this turn
+            turn -= 1  # don't count this response
             break
-        if hasher(response) == passwd_hash:
+        if hash_str(response) == passwd_hash:
             correct += 1
             answer = 'OK'
         else:
@@ -71,7 +71,7 @@ def practice():
         print(f'  {answer}\thits={correct}\tmisses={turn-correct}')
 
     if turn:
-        pct = correct / (turn) * 100
+        pct = correct / turn * 100
         print(f'\n{turn} exercises. {pct:0.1f}% correct.')
 
 
