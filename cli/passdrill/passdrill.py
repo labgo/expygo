@@ -32,7 +32,7 @@ def hasher(text):
 
 
 def save_hash(argv):
-    if len(argv) > 1 or argv[0] != '-s':
+    if len(argv) > 2 or argv[1] != '-s':
         print('ERROR: invalid argument.', HELP)
         sys.exit(1)
     passwd_hash = hasher(prompt())
@@ -77,6 +77,6 @@ def practice():
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        save_hash(sys.argv[1:])
+        save_hash(sys.argv)
     else:
         practice()
